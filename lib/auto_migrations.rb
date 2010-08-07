@@ -1,3 +1,5 @@
+require 'auto_migrations/railtie'
+
 module AutoMigrations
   
   def self.run
