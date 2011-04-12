@@ -12,17 +12,5 @@ Gem::Specification.new do |s|
 
   s.has_rdoc = false
 
-
-  s.files = ["MIT-LICENSE",
-			 "README",
-			 "Rakefile",
-			 "auto_migrations.gemspec",
-			 "init.rb",
-			 "lib/auto_migrations.rb",
-			 "rails/init.rb",
-			 "lib/tasks",
-			 "lib/tasks/auto_migrations_tasks.rake"]
-
-  s.test_files = ["test/auto_migrations_test.rb"]
-
+  s.files = `git ls-files`.split
 end
