@@ -1,0 +1,5 @@
+adapter: postgresql
+database: helloworld_development
+username: deploys
+password: starrynight
+host: localhost

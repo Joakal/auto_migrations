@@ -1,0 +1,126 @@
+== Auto Migration 
+Performs database migration based on differences between a schema.rb and the target database among other tasks. Look into Commands for a full list.
+
+Auto migration features:
+
+- Minimal dependencies. No Ruby on Rails needed.
+- Easy source control. Add schema.rb to the repoistory and can be used in deployments.
+
+This was created because while I'm not having Rails on the server, I'll have Ruby due to a Chef Client. I also did not want to create or version many migration scripts.
+
+This should also interface well with a Capistrano Auto Migration recipe on top for ease of deployment.
+
+= Basic dependencies (Ubuntu. Likely Debian too)	
+This is the interface to databases		
+	sudo gem install activerecord --no-rdoc --no-ri 	
+We want to be able to run rake commands, so thus need these both (especially for ubuntu).		
+	sudo gem install rake --no-rdoc --no-ri 	
+	ln -s /var/lib/gems/1.8/bin/rake /usr/local/bin/rake	
+= Install
+	sudo apt-get install git-core -y	
+	git clone git://github.com/joakal/auto_migrations.git ~/auto_migrations	
+Need to add the cloned repo'd files to a git repo		
+	cd ~/auto_migrations	
+	git init	
+	git add .
+Build the gem and then install it		
+	gem build ~/auto_migrations/gem/auto_migrations.gemspec	
+	sudo gem install --local ~/auto_migrations/gem/auto_migrations-1.0.20111031.gem --no-rdoc --no-ri	
+Move the relevant automigration files to any directory. Lets assume your directory is helloworld in your user directory:		
+	sudo cp ~/auto_migrations/Rakefile -f ~/helloworld/automigrations/Rakefile	
+	sudo cp ~/auto_migrations/db/schema.rb -f ~/helloworld/automigrations/db/schema.rb	
+	sudo cp ~/auto_migrations/config/index.html -f ~/helloworld/automigrations/config/index.html	
+Now there needs to be a specified database.yml in the config folder. Lets assume it's postgresql you're using then do the following:		
+	echo "adapter: postgresql" | sudo tee -a ~/helloworld/automigrations/config/database.yml	
+	echo "database: helloworld_development" | sudo tee -a ~/helloworld/automigrations/config/database.yml	
+	echo "username: deploys" | sudo tee -a ~/helloworld/automigrations/config/database.yml	
+	echo "password: hunter2" | sudo tee -a ~/helloworld/automigrations/config/database.yml	
+	echo "host: localhost" | sudo tee -a ~/helloworld/automigrations/config/database.yml	
+The database.yml takes the ruby database format that's available at many other places.		
+		
+You can remove ~/auto_migrations folder to clean up a bit.		
+Usage		
+	rake {command}	
+		
+	Note: Must be in the directory of Rakefile.	
+= Commands		
+	db:auto:migrate	
+		Uses db/schema.rb to compare against the target database to perform migrations based on assumptions. 
+		tables can be added and deleted.
+		columns can be added, deleted and changed depending on database.
+		indexs can be added and deleted.
+		
+		DESTRUCTIVE OPERATION.
+	db:auto:migrate_safely	
+		Uses db/schema.rb to compare against the target database to perform migrations safely based on assumptions. 
+		tables can be added.
+		columns can be added.
+		indexs can be added.
+	db:schema:to_migration	
+		Create a migration script from db/schema.rb.
+	db:schema:to_migration_with_reset	
+		Create a migration script from db/schema.rb that includes resetting versioning.
+	db:schema:dump	
+		Creates the db/schema.rb based on the target database.
+	db:schema:load	
+		Drops everything in the database and loads the db/schema.rb to the target database to create from scratch.
+		
+		DESTRUCTIVE OPERATION.
+		
+= Tutorial – Single Computer		
+Do the install above. Lets assume the application name is helloworld of course.
+		
+Also mentioned, it's postgresql being used. So lets keep using it for this tutorial.
+Install postgresql if you haven't already
+	sudo apt-get install postgresql -y
+Using the postgres library (or use whichever you prefer).
+	sudo apt-get install libpq-dev -y
+	sudo gem install pg -v '0.11.0' --no-rdoc --no-ri
+Superuser deploys!
+	sudo -u postgres createuser -s deploys
+Security protip: Create a user for the database or sections of the database instead of full access to all the databases.
+Annoying ident: In postgres directory, modify pg_hba.conf to trust local connections. (Then restart postgresql)
+
+Create your own database (psql refuses to work unless you have your own database apparently)
+	sudo -u postgres psql -c "CREATE USER deploys WITH CREATEDB LOGIN ENCRYPTED PASSWORD 'hunter2'"
+Now create the database
+	psql -U deploys -c 'CREATE DATABASE helloworld_development'
+
+In your database, create a table called "users" with columns “username” => string, “age” => integer		
+	psql -U deploys -d 'helloworld_development' -c 'CREATE TABLE users (username varchar, age integer)'	
+		
+Next add some data!		
+	psql -U deploys -d "helloworld_development" -c "INSERT INTO users (username, age) VALUES ('Joakal', 400)"	
+	psql -U deploys -d "helloworld_development" -c "INSERT INTO users (username, age) VALUES ('torrancew', 500)"	
+	psql -U deploys -d "helloworld_development" -c "INSERT INTO users (username, age) VALUES ('Harzilein', 500)"	
+	psql -U deploys -d "helloworld_development" -c "INSERT INTO users (username, age) VALUES ('Ruby', 4)"
+See the data:
+	psql -U deploys -d "helloworld_development" -c "SELECT * FROM users"	
+Add an index on username
+	psql -U deploys -d "helloworld_development" -c "CREATE UNIQUE INDEX username_idx ON users (username); "
+		
+Add a composite index on age + username	
+	psql -U deploys -d "helloworld_development" -c "CREATE UNIQUE INDEX combo_idx ON users (username, age); "
+		
+This is the table so far:
+	psql -U deploys -d "helloworld_development" -c "\d users"
+
+Lets dump it to ~/helloworld/automigrations/db/schema.rb
+	cd ~/helloworld/automigrations
+	rake db:schema:dump
+
+Open up ~/helloworld/db/schema.rb. Pretty sweet eh? Add a new table just below that other table. Ignore that other table and indexes.
+	  create_table "product", :force => true do |t|
+	    t.datetime "created_at"
+	    t.string   "brand"
+	    t.string   "name"
+	    t.integer   "quantity"
+	  end
+Now load it!
+	cd ~/helloworld
+	rake db:auto:migrate_safely
+
+Look up the table.
+	psql -d "helloworld_development" -c "\d product"
+
+It loads the new table and columns, neat eh?

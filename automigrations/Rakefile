@@ -1,0 +1,41 @@
+#!/usr/bin/env rake
+# Add your own tasks in files placed in lib/tasks ending in .rake,
+# for example lib/tasks/capistrano.rake, and they will automatically be available to Rake.
+
+require 'auto_migrations'
+
+namespace :db do
+  namespace :auto do
+    desc "Use schema.rb to auto-migrate. DESTRUCTIVE OPERATION."
+    task :migrate do
+      AutoMigrations::run(true)
+    end 
+
+    desc "Use schema.rb to safely auto-migrate."
+    task :migrate_safely do
+      AutoMigrations::run
+    end 
+  end
+  
+  namespace :schema do
+    desc "Create migration from schema.rb."
+    task :to_migration do
+      AutoMigrations.schema_to_migration
+    end
+
+    desc "Create migration from schema.rb and reset migrations log."
+    task :to_migration_with_reset do
+      AutoMigrations.schema_to_migration(true)
+    end
+
+    desc "Dumps the schema.rb of the database."
+    task :dump do
+      AutoMigrations.schema_dump
+    end
+
+    desc "Load the schema.rb of the database from scratch. DESTRUCTIVE OPERATION."
+    task :load do
+      AutoMigrations.schema_load
+    end
+  end
+end
