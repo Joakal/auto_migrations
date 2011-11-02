@@ -32,7 +32,7 @@ Move the relevant automigration files to any directory. Lets assume your directo
 	cp ~/auto_migrations/config/index.html -f ~/helloworld/automigrations/config/index.html	
 Now there needs to be a specified database.yml in the config folder. Lets assume it's postgresql you're using then do the following:		
 	echo "adapter: postgresql" | tee -a ~/helloworld/automigrations/config/database.yml	
-	echo "database: helloworld_development" | sudo tee -a ~/helloworld/automigrations/config/database.yml	
+	echo "database: helloworld_development" | tee -a ~/helloworld/automigrations/config/database.yml	
 	echo "username: deploys" | tee -a ~/helloworld/automigrations/config/database.yml	
 	echo "password: hunter2" | tee -a ~/helloworld/automigrations/config/database.yml	
 	echo "host: localhost" | tee -a ~/helloworld/automigrations/config/database.yml	
