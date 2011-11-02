@@ -27,19 +27,20 @@ Build the gem and then install it
 	gem build ~/auto_migrations/gem/auto_migrations.gemspec	
 	sudo gem install --local ~/auto_migrations/gem/auto_migrations-1.0.20111031.gem --no-rdoc --no-ri	
 Move the relevant automigration files to any directory. Lets assume your directory is helloworld in your user directory:		
-	sudo cp ~/auto_migrations/Rakefile -f ~/helloworld/automigrations/Rakefile	
-	sudo cp ~/auto_migrations/db/schema.rb -f ~/helloworld/automigrations/db/schema.rb	
-	sudo cp ~/auto_migrations/config/index.html -f ~/helloworld/automigrations/config/index.html	
+	cp ~/auto_migrations/Rakefile -f ~/helloworld/automigrations/Rakefile	
+	cp ~/auto_migrations/db/schema.rb -f ~/helloworld/automigrations/db/schema.rb	
+	cp ~/auto_migrations/config/index.html -f ~/helloworld/automigrations/config/index.html	
 Now there needs to be a specified database.yml in the config folder. Lets assume it's postgresql you're using then do the following:		
-	echo "adapter: postgresql" | sudo tee -a ~/helloworld/automigrations/config/database.yml	
+	echo "adapter: postgresql" | tee -a ~/helloworld/automigrations/config/database.yml	
 	echo "database: helloworld_development" | sudo tee -a ~/helloworld/automigrations/config/database.yml	
-	echo "username: deploys" | sudo tee -a ~/helloworld/automigrations/config/database.yml	
-	echo "password: hunter2" | sudo tee -a ~/helloworld/automigrations/config/database.yml	
-	echo "host: localhost" | sudo tee -a ~/helloworld/automigrations/config/database.yml	
+	echo "username: deploys" | tee -a ~/helloworld/automigrations/config/database.yml	
+	echo "password: hunter2" | tee -a ~/helloworld/automigrations/config/database.yml	
+	echo "host: localhost" | tee -a ~/helloworld/automigrations/config/database.yml	
 The database.yml takes the ruby database format that's available at many other places.		
 		
-You can remove ~/auto_migrations folder to clean up a bit.		
-Usage		
+You can remove ~/auto_migrations folder to clean up a bit.
+	
+= Usage		
 	rake {command}	
 		
 	Note: Must be in the directory of Rakefile.	
